@@ -19,7 +19,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="Certificação Royal Canin São Paulo", page_icon="🐾", layout="centered", initial_sidebar_state="collapsed")
 
-# CSS Customizado: Fundo limpo, elementos de destaque com excelente contraste
+# CSS Customizado: Fundo limpo, elementos com contraste e botões pretos com texto branco em negrito
 st.markdown("""
     <style>
         .stApp {
@@ -73,15 +73,16 @@ st.markdown("""
             margin-bottom: 15px;
             color: #1E293B;
         }
+        /* Botões em preto com texto em branco e negrito forte */
         .stButton>button {
-            background-color: #E2001A !important;
+            background-color: #000000 !important;
             color: #FFFFFF !important;
             border-radius: 6px;
             border: none;
-            font-weight: 600;
+            font-weight: 700 !important;
         }
         .stButton>button:hover {
-            background-color: #B91C1C !important;
+            background-color: #27272A !important;
             color: #FFFFFF !important;
         }
     </style>
@@ -393,7 +394,6 @@ def gerar_pdf_certificacao_sp(tipo_auditoria, promotora, loja, cidade, endereco,
         canvas.saveState()
         canvas.setFont('Helvetica', 7)
         canvas.setFillColor(colors.HexColor('#64748B'))
-        # Explicação dividida em 2 linhas limpas
         linha1 = "Critérios de Pontuação (Total Máximo: 6.0 pts): Planogramas Cão/Gato/Vet = 1.0 pt cada | Super Premium Separada/Categoria = 0.5 pt cada"
         linha2 = "Conservação = 0.25 pt | Merchandising (>=3=0.75, 2=0.50, 1=0.25) | Pontos Extras (3=1.0, 2=0.50, 1=0.25)."
         
