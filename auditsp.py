@@ -19,7 +19,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="Certificação Royal Canin São Paulo", page_icon="🐾", layout="centered", initial_sidebar_state="collapsed")
 
-# CSS Customizado: Fundo limpo, elementos com contraste e botões pretos com texto branco em negrito
+# CSS Customizado: Fundo limpo, elementos com contraste e botão com texto branco em negrito forçado
 st.markdown("""
     <style>
         .stApp {
@@ -36,14 +36,12 @@ st.markdown("""
         .stRadio label, .stCheckbox label, .stSelectbox label, p, span, div {
             color: #1E293B !important;
         }
-        /* Campos de Seleção (Selectbox) com fundo contrastante e borda nítida */
         div[data-baseweb="select"] > div {
             background-color: #F1F5F9 !important;
             color: #0F172A !important;
             border: 1.5px solid #CBD5E1 !important;
             font-weight: bold !important;
         }
-        /* Caixas de Texto (Text Area e Text Input) com fundo destacado */
         textarea, input {
             background-color: #F1F5F9 !important;
             color: #0F172A !important;
@@ -73,12 +71,14 @@ st.markdown("""
             margin-bottom: 15px;
             color: #1E293B;
         }
-        /* Botões em preto com texto em branco e negrito forte */
         .stButton>button {
             background-color: #000000 !important;
             color: #FFFFFF !important;
             border-radius: 6px;
             border: none;
+        }
+        .stButton>button p {
+            color: #FFFFFF !important;
             font-weight: 700 !important;
         }
         .stButton>button:hover {
@@ -228,7 +228,7 @@ def enviar_email_interacao(loja, supervisor, tipo, comentario, data_auditoria):
     Comentário: "{comentario}"
     
     Atenciosamente,
-    Sistema de Certificação Royal Canin SP.
+    Benedito
     """
     msg.attach(MIMEText(corpo, 'plain'))
     try:
@@ -418,7 +418,7 @@ def enviar_email_auditoria(assunto, pdf_paths, destinatarios, corpo_email=""):
     msg['Subject'] = assunto
 
     if not corpo_email:
-        corpo_email = "Olá,\n\nSegue em anexo o relatório de certificação da Royal Canin São Paulo.\n\nAtenciosamente,\nSistema de Certificação SP."
+        corpo_email = "Olá,\n\nSegue em anexo o relatório de certificação da Royal Canin São Paulo.\n\nAtenciosamente,\nBenedito"
 
     msg.attach(MIMEText(corpo_email, 'plain', 'utf-8'))
 
@@ -561,24 +561,10 @@ if menu == "📝 Área da Promotora":
                 observacoes_promotora = st.text_area("Digite aqui qualquer observação relevante sobre o PDV:")
 
                 st.markdown("---")
-                st.subheader("11. Opções de Envio")
-                opcao_envio = st.radio(
-                    "Selecione quem deve receber o relatório completo (PDF):",
-                    ["Somente Benedito", "Toda a Equipe (Benedito, Poli, Caio, Daniel, Rubens)"]
-                )
                 
                 if st.button("Finalizar, Salvar e Enviar Certificação", type="primary"):
                     
-                    if opcao_envio == "Somente Benedito":
-                        destinatarios = ["benedito.bandola@minassal.com.br"]
-                    else:
-                        destinatarios = [
-                            "benedito.bandola@minassal.com.br",
-                            "poli@minassal.com.br",
-                            "caio.poli@minassal.com.br",
-                            "daniel.santini@minassal.com.br",
-                            "rubens.porfirio@minassal.com.br"
-                        ]
+                    destinatarios = ["benedito.bandola@minassal.com.br"]
 
                     nota_total = 0.0
 
@@ -624,7 +610,7 @@ if menu == "📝 Área da Promotora":
                     corpo_email += f"• Super Premium Separada: {sep_fhn} | Categoria SP: {cat_sp}\n"
                     corpo_email += f"• Conservação: {conservacao} | Materiais POP: {total_materiais} | Pontos Extras: {qtd_pontos_extras}\n\n"
                     corpo_email += f"Observações: {observacoes_promotora.strip() if observacoes_promotora.strip() else 'Nenhuma.'}\n\n"
-                    corpo_email += "Atenciosamente,\nSistema de Certificação Royal Canin SP."
+                    corpo_email += "Atenciosamente,\nBenedito"
 
                     with st.spinner("Gerando PDF e enviando e-mail..."):
                         pdf_path = gerar_pdf_certificacao_sp(
@@ -645,7 +631,7 @@ if menu == "📝 Área da Promotora":
                         enviado = enviar_email_auditoria(assunto, [pdf_path], destinatarios, corpo_email)
 
                         if enviado:
-                            st.success(f"✅ Certificação finalizada com sucesso! Relatório enviado para os e-mails da gestão.")
+                            st.success(f"✅ Certificação finalizada com sucesso! Relatório enviado para o seu e-mail.")
                             with open(pdf_path, "rb") as f:
                                 st.download_button("📥 Baixar PDF Gerado", data=f, file_name=os.path.basename(pdf_path), mime="application/pdf")
                         else:
