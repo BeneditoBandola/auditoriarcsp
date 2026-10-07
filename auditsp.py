@@ -21,7 +21,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="Certificação Royal Canin São Paulo", page_icon="🐾", layout="centered", initial_sidebar_state="collapsed")
 
-# CSS Customizado: Força o modo claro e limpa a cor do menu suspenso (dropdown)
+# CSS Customizado: Fundo branco e itens do selectbox em destaque (branco/negrito)
 st.markdown("""
     <style>
         /* Fundo principal da aplicação e textos */
@@ -41,24 +41,27 @@ st.markdown("""
         .stRadio label, .stCheckbox label, .stSelectbox label, p, span, div {
             color: #1E293B !important;
         }
-        /* Caixa de seleção (Selectbox) - Força fundo branco e texto escuro */
+        /* Caixa principal do Selectbox fechada */
         div[data-baseweb="select"] > div {
             background-color: #F8FAFC !important;
             color: #1E293B !important;
             border-color: #CBD5E1 !important;
+            font-weight: bold !important;
         }
-        /* Dropdown/Lista suspensa aberta - Fundo branco e texto visível */
-        div[data-baseweb="popover"] div[role="listbox"] {
+        /* POPUP / LISTA SUSPENSA ABERTA - Fundo branco e texto bem visível em negrito */
+        div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {
             background-color: #FFFFFF !important;
-            color: #1E293B !important;
         }
-        div[data-baseweb="popover"] div[role="option"] {
+        div[data-baseweb="popover"] div[role="option"], ul[role="listbox"] li {
             background-color: #FFFFFF !important;
-            color: #1E293B !important;
-        }
-        div[data-baseweb="popover"] div[role="option"]:hover {
-            background-color: #E2E8F0 !important;
             color: #0F172A !important;
+            font-weight: bold !important;
+        }
+        /* Item selecionado ou com o rato por cima ao abrir a lista */
+        div[data-baseweb="popover"] div[role="option"]:hover, ul[role="listbox"] li:hover {
+            background-color: #E2E8F0 !important;
+            color: #1D4ED8 !important;
+            font-weight: bold !important;
         }
         /* Cartões de destaque */
         .custom-card {
