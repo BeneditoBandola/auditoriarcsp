@@ -42,7 +42,7 @@ menu = "📝 Área da Promotora"
 @st.cache_data
 def load_clients():
     try:
-        return pd.read_excel("Cópia de clientes com cnpj corretinho novinho.xlsx")
+        return pd.read_excel("clientes.xlsx")
     except Exception as e:
         st.error(f"Erro ao carregar a planilha de clientes: {e}")
         return pd.DataFrame()
@@ -580,19 +580,15 @@ if menu == "📝 Área da Promotora":
                     # --- CÁLCULO DA NOTA EXATO CONFORME REGRAS ---
                     nota_total = 0.0
 
-                    # Itens 2, 3 e 4 (1.0 pt cada se Sim)
                     if plano_cao == "Sim": nota_total += 1.0
                     if plano_gato == "Sim": nota_total += 1.0
                     if plano_vet == "Sim": nota_total += 1.0
 
-                    # Itens 5 e 6 (0.5 pt cada se Sim)
                     if sep_fhn == "Sim": nota_total += 0.5
                     if cat_sp == "Sim": nota_total += 0.5
 
-                    # Item 7 (0.25 pt se Sim)
                     if conservacao == "Sim": nota_total += 0.25
 
-                    # Item 8 (Merchandising: >=3 = 0.75, 2 = 0.50, 1 = 0.25)
                     materiais_ativos_lista = [m for m in materiais if mat_presenca[m]]
                     total_materiais = len(materiais_ativos_lista)
                     p_merch = 0.0
@@ -601,7 +597,6 @@ if menu == "📝 Área da Promotora":
                     elif total_materiais == 1: p_merch = 0.25
                     nota_total += p_merch
 
-                    # Item 9 (Pontos Extras: 3 = 1.0, 2 = 0.50, 1 = 0.25, 0 = 0)
                     p_extras = 0.0
                     if qtd_pontos_extras >= 3: p_extras = 1.0
                     elif qtd_pontos_extras == 2: p_extras = 0.50
