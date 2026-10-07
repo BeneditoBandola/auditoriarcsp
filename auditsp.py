@@ -19,11 +19,16 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
-st.set_page_config(page_title="AuditSP - Royal Canin", page_icon="🐾", layout="centered", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Certificação Royal Canin São Paulo", page_icon="🐾", layout="centered", initial_sidebar_state="collapsed")
 
-# CSS para ocultar a barra lateral
+# CSS Customizado: Fundo totalmente branco, tema claro e tons azulados refinados
 st.markdown("""
     <style>
+        /* Fundo principal e texto em tom claro/neutro */
+        .stApp {
+            background-color: #FFFFFF;
+            color: #1E293B;
+        }
         [data-testid="stSidebar"] {
             display: none;
         }
@@ -32,6 +37,32 @@ st.markdown("""
         }
         [data-testid="collapsedControl"] {
             display: none;
+        }
+        /* Estilização dos títulos e subtítulos com tons azulados */
+        h1, h2, h3 {
+            color: #1E3A8A !important;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+        /* Caixas de destaque e cartões com fundo azul bem suave */
+        .custom-card {
+            background-color: #F0F4F8;
+            border-left: 5px solid #2563EB;
+            padding: 14px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            color: #1E293B;
+        }
+        /* Botões principais em azul corporativo */
+        .stButton>button {
+            background-color: #1D4ED8;
+            color: #FFFFFF;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+        }
+        .stButton>button:hover {
+            background-color: #1E40AF;
+            color: #FFFFFF;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -91,7 +122,7 @@ def registrar_log_acesso(supervisor):
         pass
 
 def listar_usuarios_cadastrados():
-    usuarios_padrao = ["Benedito", "Caio", "Poli", "Rubens", "Daniel", "Sarmento", "Paulo Maia"]
+    usuarios_padrao = ["Benedito", "Caio", "Poli", "Rubens", "Daniel", "CDRC RIO PRETO", "CDRC SÃO JOÃO DA BOA VISTA"]
     try:
         wb = conectar_google_sheets()
         if wb:
@@ -182,13 +213,13 @@ def enviar_email_interacao(loja, supervisor, tipo, comentario, data_auditoria):
     corpo = f"""
     Olá!
     
-    O supervisor {supervisor} registrou uma nova interação na loja {loja} (Auditoria SP de {data_auditoria}).
+    O supervisor {supervisor} registrou uma nova interação na loja {loja} (Certificação SP de {data_auditoria}).
     
     Tipo: {tipo}
     Comentário: "{comentario}"
     
     Atenciosamente,
-    Sistema de Auditoria AuditSP.
+    Sistema de Certificação Royal Canin SP.
     """
     msg.attach(MIMEText(corpo, 'plain'))
     try:
@@ -225,12 +256,12 @@ def salvar_no_google_sheets(dados_auditoria):
         wb = conectar_google_sheets()
         if wb:
             try:
-                sheet = wb.worksheet("Historico_AuditSP")
+                sheet = wb.worksheet("Historico_CertificacaoSP")
             except:
                 try:
-                    sheet = wb.add_worksheet(title="Historico_AuditSP", rows="100", cols="20")
+                    sheet = wb.add_worksheet(title="Historico_CertificacaoSP", rows="100", cols="20")
                     sheet.append_row([
-                        "Data/Hora", "Promotora", "Cidade", "Loja", "Nota Total", 
+                        "Data/Hora", "CDRC", "Cidade", "Loja", "Nota Total", 
                         "Tipo Loja", "Plano Cão", "Plano Gato", "Plano Vet", 
                         "Super Premium Separada", "Super Premium Categoria", "Conservação", 
                         "Materiais JSON", "Pontos Extras", "Observações", "Fotos JSON"
@@ -246,28 +277,28 @@ def salvar_no_google_sheets(dados_auditoria):
         return False
     return False
 
-def gerar_pdf_audit_sp(tipo_auditoria, promotora, loja, cidade, endereco, dados_completos, nota_total, caminhos_fotos=None):
+def gerar_pdf_certificacao_sp(tipo_auditoria, promotora, loja, cidade, endereco, dados_completos, nota_total, caminhos_fotos=None):
     loja_limpa = "".join([c for c in loja if c.isalnum() or c in (' ', '_', '-')]).strip().replace(' ', '_')
-    arq_completo = f"AUDITSP_{tipo_auditoria.upper().replace('-', '_')}_{loja_limpa}.pdf"
+    arq_completo = f"CERTIFICACAO_SP_{tipo_auditoria.upper().replace('-', '_')}_{loja_limpa}.pdf"
 
     estilos = getSampleStyleSheet()
     style_celula = ParagraphStyle('EstiloCelula', parent=estilos['Normal'], fontSize=8, leading=10, textColor=colors.HexColor('#1F2937'))
     style_celula_cab = ParagraphStyle('EstiloCelulaCab', parent=estilos['Normal'], fontSize=8, leading=10, textColor=colors.white, fontName="Helvetica-Bold")
     
     cor_cabecalho_principal = colors.HexColor('#1E3A8A')
-    cor_cabecalho_secundario = colors.HexColor('#059669')
+    cor_cabecalho_secundario = colors.HexColor('#0284C7')
     
     fuso_sp = pytz.timezone('America/Sao_Paulo')
     agora = datetime.now(fuso_sp).strftime("%d/%m/%Y %H:%M")
 
     def criar_pagina_1():
         elem = []
-        elem.append(Paragraph(f"<b>RELATÓRIO EXECUTIVO - {tipo_auditoria.upper()} (RTM SP)</b>", estilos['Title']))
+        elem.append(Paragraph(f"<b>RELATÓRIO DE CERTIFICAÇÃO - {tipo_auditoria.upper()} (SÃO PAULO)</b>", estilos['Title']))
         elem.append(Spacer(1, 5))
         elem.append(Paragraph(f"<b>LOJA:</b> {loja} | <b>CIDADE:</b> {cidade}", estilos['Normal']))
         elem.append(Paragraph(f"<b>ENDEREÇO:</b> {endereco}", estilos['Normal']))
-        elem.append(Paragraph(f"<b>PROMOTORA:</b> {promotora} | <b>DATA/HORA:</b> {agora}", estilos['Normal']))
-        elem.append(Paragraph(f"<b>NOTA FINAL DO PDV:</b> <font color='#1E3A8A'><b>{nota_total:.2f} / 6.0 pts</b></font>", estilos['Heading2']))
+        elem.append(Paragraph(f"<b>CDRC RESPONSÁVEL:</b> {promotora} | <b>DATA/HORA:</b> {agora}", estilos['Normal']))
+        elem.append(Paragraph(f"<b>NOTA FINAL DA CERTIFICAÇÃO:</b> <font color='#1E3A8A'><b>{nota_total:.2f} / 6.0 pts</b></font>", estilos['Heading2']))
         elem.append(Spacer(1, 10))
 
         elem.append(Paragraph("<b>1. DADOS DA LOJA E PLANOGRAMAS</b>", estilos['Heading3']))
@@ -328,9 +359,9 @@ def gerar_pdf_audit_sp(tipo_auditoria, promotora, loja, cidade, endereco, dados_
         elem.append(Spacer(1, 10))
 
         if dados_completos.get('observacoes'):
-            elem.append(Paragraph("<b>4. OBSERVAÇÕES DA PROMOTORA</b>", estilos['Heading3']))
+            elem.append(Paragraph("<b>4. OBSERVAÇÕES</b>", estilos['Heading3']))
             t_obs = Table([[Paragraph(dados_completos['observacoes'], style_celula)]], colWidths=[540])
-            t_obs.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,0), colors.HexColor('#F3F4F6')), ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#9CA3AF')), ('VALIGN', (0,0), (-1,-1), 'TOP')]))
+            t_obs.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,0), colors.HexColor('#F8FAFC')), ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#94A3B8')), ('VALIGN', (0,0), (-1,-1), 'TOP')]))
             elem.append(t_obs)
             elem.append(Spacer(1, 10))
 
@@ -340,7 +371,7 @@ def gerar_pdf_audit_sp(tipo_auditoria, promotora, loja, cidade, endereco, dados_
         elem = []
         if caminhos_fotos:
             elem.append(PageBreak())
-            elem.append(Paragraph("<b>ANEXO: EVIDÊNCIAS FOTOGRÁFICAS (ALTA QUALIDADE)</b>", estilos['Heading3']))
+            elem.append(Paragraph("<b>ANEXO: EVIDÊNCIAS FOTOGRÁFICAS</b>", estilos['Heading3']))
             elem.append(Spacer(1, 10))
             linhas_tabela = []
             par_atual = []
@@ -365,7 +396,7 @@ def gerar_pdf_audit_sp(tipo_auditoria, promotora, loja, cidade, endereco, dados_
     def adicionar_rodape(canvas, doc):
         canvas.saveState()
         canvas.setFont('Helvetica', 8)
-        canvas.setFillColor(colors.HexColor('#666666'))
+        canvas.setFillColor(colors.HexColor('#64748B'))
         canvas.drawRightString(A4[0] - 25, 15, "Desenvolvido por Benedito Bandola")
         canvas.restoreState()
 
@@ -388,7 +419,7 @@ def enviar_email_auditoria(assunto, pdf_paths, destinatarios, corpo_email=""):
     msg['Subject'] = assunto
 
     if not corpo_email:
-        corpo_email = "Olá,\n\nSegue em anexo o relatório executivo e as comprovações fotográficas da auditoria SP.\n\nAtenciosamente,\nSistema AuditSP."
+        corpo_email = "Olá,\n\nSegue em anexo o relatório executivo e as comprovações fotográficas da Certificação Royal Canin São Paulo.\n\nAtenciosamente,\nSistema de Certificação SP."
 
     msg.attach(MIMEText(corpo_email, 'plain', 'utf-8'))
 
@@ -410,10 +441,10 @@ def enviar_email_auditoria(assunto, pdf_paths, destinatarios, corpo_email=""):
         return False
 
 # ==============================================================
-# FLUXO 1: ÁREA DA PROMOTORA (AuditSP)
+# FLUXO 1: ÁREA DA PROMOTORA
 # ==============================================================
 if menu == "📝 Área da Promotora":
-    st.title("🐾 AuditSP - Certificação Royal Canin")
+    st.title("🐾 Certificação Royal Canin São Paulo")
     st.markdown("---")
     
     if df_clientes.empty:
@@ -432,21 +463,18 @@ if menu == "📝 Área da Promotora":
         with col_tipo:
             tipo_auditoria = st.radio("Selecione o Tipo de Registro:", ["Pré-Auditoria", "Auditoria"], horizontal=True)
         with col_prom:
-            promotora = st.selectbox("Selecione a Promotora / Supervisor:", ["Selecione...", "Pamela", "Fernanda", "Madalla", "Sarmento", "Paulo Maia"])
+            promotora = st.selectbox("Selecione o CDRC / Responsável:", ["Selecione...", "CDRC RIO PRETO", "CDRC SÃO JOÃO DA BOA VISTA"])
 
         if promotora != "Selecione...":
             cidades_map = {
-                "Pamela": ["POCOS DE CALDAS", "ANDRADAS", "VARGINHA", "ALFENAS", "SAO LOURENCO", "ITAJUBA", "TRES PONTAS", "TRES CORACOES", "POUSO ALEGRE"],
-                "Fernanda": ["JUIZ DE FORA"],
-                "Madalla": ["MURIAE", "VICOSA", "UBA", "VISCONDE DO RIO BRANCO", "PIRAUBA", "RIO POMBA", "GUARANI", "GUIDOVAL", "TOCANTINS", "SAO JOAO NEPOMUCENO", "RIO NOVO", "RODEIRO"],
-                "Sarmento": [
+                "CDRC RIO PRETO": [
                     "SAO JOSE DO RIO PRETO", "MIRASSOL", "OLIMPIA", "IBIRA", "POTIRENDABA", 
                     "JOSE BONIFACIO", "NEVES PAULISTA", "TABAPUA", "POLONI", "CEDRAL", 
                     "TANABI", "JACI", "BADY BASSITT", "IPIGUA", "NOVA GRANADA", "GUAPIACU", 
                     "MONTE APRAZIVEL", "URUPES", "MENDONCA", "BALSAMO", "UCHOA", "CATIGUA", 
                     "MIRASSOLANDIA"
                 ],
-                "Paulo Maia": [
+                "CDRC SÃO JOÃO DA BOA VISTA": [
                     "RIBEIRAO PRETO", "BATATAIS", "SERRANA", "JARDINOPOLIS", "SERTAOZINHO", 
                     "CRAVINHOS", "PONTAL", "SAO SIMAO", "PITANGUEIRAS", "BRODOWSKI", 
                     "LUIS ANTONIO", "DUMONT", "SALES OLIVEIRA", "BARRINHA", "SERRA AZUL", 
@@ -485,9 +513,9 @@ if menu == "📝 Área da Promotora":
                     cnpj_formatado = "Não informado"
                 
                 st.markdown(f"""
-                <div style="background-color: #F8FAFC; border-left: 5px solid #E2001A; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
+                <div class="custom-card">
                     <div style="font-size: 15px; margin-bottom: 4px;">
-                        🏢 <b>CNPJ:</b> <span style="color: #E2001A; font-weight: 900; font-size: 17px; font-family: monospace;">{cnpj_formatado}</span>
+                        🏢 <b>CNPJ:</b> <span style="color: #1D4ED8; font-weight: 900; font-size: 17px; font-family: monospace;">{cnpj_formatado}</span>
                     </div>
                     <div style="font-size: 13.5px; color: #475569;">
                         📍 <b>Cidade:</b> {cidade_loja} | <b>Endereço:</b> {endereco_loja}
@@ -532,7 +560,7 @@ if menu == "📝 Área da Promotora":
                 st.markdown("---")
                 st.subheader("10. Registro Fotográfico")
                 st.info("💡 As fotos serão anexadas diretamente no Relatório PDF com alta qualidade.")
-                arquivos_fotos = st.file_uploader("Envie as fotos da auditoria:", type=['jpg', 'jpeg', 'png'], accept_multiple_files=True)
+                arquivos_fotos = st.file_uploader("Envie as fotos da certificação:", type=['jpg', 'jpeg', 'png'], accept_multiple_files=True)
                 
                 caminhos_temporarios = []
                 if arquivos_fotos:
@@ -559,7 +587,7 @@ if menu == "📝 Área da Promotora":
                     ["Somente Benedito", "Toda a Equipe (Benedito, Poli, Caio, Daniel, Rubens)"]
                 )
                 
-                if st.button("Finalizar, Salvar e Enviar AuditSP", type="primary"):
+                if st.button("Finalizar, Salvar e Enviar Certificação", type="primary"):
                     
                     if opcao_envio == "Somente Benedito":
                         destinatarios = ["benedito.bandola@minassal.com.br"]
@@ -571,11 +599,6 @@ if menu == "📝 Área da Promotora":
                             "daniel.santini@minassal.com.br",
                             "rubens.porfirio@minassal.com.br"
                         ]
-
-                    if promotora == "Pamela":
-                        email_pamela = "pamelaalmeida5@icloud.com"
-                        if email_pamela not in destinatarios:
-                            destinatarios.append(email_pamela)
 
                     # --- CÁLCULO DA NOTA EXATO CONFORME REGRAS ---
                     nota_total = 0.0
@@ -614,17 +637,18 @@ if menu == "📝 Área da Promotora":
                     fuso_sp = pytz.timezone('America/Sao_Paulo')
                     data_atual = datetime.now(fuso_sp).strftime("%d/%m/%Y %H:%M:%S")
                     
-                    corpo_email = f"Olá,\n\nSegue o relatório executivo e as comprovações fotográficas referente a {tipo_auditoria.upper()} (RTM SP) da loja {loja_selecionada} ({cidade_loja}).\n\n"
+                    corpo_email = f"Olá,\n\nSegue o relatório executivo e as comprovações fotográficas referente à {tipo_auditoria.upper()} - Certificação Royal Canin SP da loja {loja_selecionada} ({cidade_loja}).\n\n"
                     corpo_email += f"📊 NOTA FINAL ATUAL: {nota_total:.2f} / 6.0 pts\n\n"
+                    corpo_email += f"• CDRC Responsável: {promotora}\n"
                     corpo_email += f"• Tipo de Loja: {tipo_loja}\n"
                     corpo_email += f"• Planograma Cão: {plano_cao} | Gato: {plano_gato} | Vet: {plano_vet}\n"
                     corpo_email += f"• Super Premium Separada: {sep_fhn} | Categoria SP: {cat_sp}\n"
                     corpo_email += f"• Conservação: {conservacao} | Materiais POP: {total_materiais} | Pontos Extras: {qtd_pontos_extras}\n\n"
                     corpo_email += f"Observações: {observacoes_promotora.strip() if observacoes_promotora.strip() else 'Nenhuma.'}\n\n"
-                    corpo_email += "Atenciosamente,\nSistema AuditSP Royal Canin."
+                    corpo_email += "Atenciosamente,\nSistema de Certificação Royal Canin SP."
 
                     with st.spinner("Gerando PDF e enviando e-mail..."):
-                        pdf_path = gerar_pdf_audit_sp(
+                        pdf_path = gerar_pdf_certificacao_sp(
                             tipo_auditoria, promotora, loja_selecionada, cidade_loja, endereco_loja,
                             dados_completos, nota_total, caminhos_temporarios
                         )
@@ -638,11 +662,11 @@ if menu == "📝 Área da Promotora":
 
                         salvar_no_google_sheets(dados_planilha)
                         
-                        assunto = f"📋 Relatório AuditSP {tipo_auditoria}: {loja_selecionada} ({cidade_loja}) - Nota {nota_total:.2f}"
+                        assunto = f"📋 Certificação SP [{tipo_auditoria}]: {loja_selecionada} ({cidade_loja}) - Nota {nota_total:.2f}"
                         enviado = enviar_email_auditoria(assunto, [pdf_path], destinatarios, corpo_email)
 
                         if enviado:
-                            st.success(f"✅ Auditoria SP finalizada com sucesso! Relatório enviado para os e-mails da gestão.")
+                            st.success(f"✅ Certificação finalizada com sucesso! Relatório enviado para os e-mails da gestão.")
                             with open(pdf_path, "rb") as f:
                                 st.download_button("📥 Baixar PDF Gerado", data=f, file_name=os.path.basename(pdf_path), mime="application/pdf")
                         else:
@@ -652,19 +676,19 @@ if menu == "📝 Área da Promotora":
 # FLUXO 2: HISTÓRICO & FEEDBACKS
 # ==============================================================
 elif menu == "📋 Histórico & Feedbacks":
-    st.title("📋 Histórico de Auditorias SP & Feedbacks")
+    st.title("📋 Histórico de Certificações & Feedbacks")
     st.markdown("---")
     
     wb = conectar_google_sheets()
     if wb:
         try:
-            sheet = wb.worksheet("Historico_AuditSP")
+            sheet = wb.worksheet("Historico_CertificacaoSP")
             dados = sheet.get_all_records()
             if dados:
                 df_hist = pd.DataFrame(dados)
                 st.dataframe(df_hist.tail(20), use_container_width=True)
             else:
-                st.info("Nenhuma auditoria SP registrada até o momento.")
+                st.info("Nenhuma certificação registrada até o momento.")
         except Exception as e:
             st.error(f"Erro ao ler histórico: {e}")
     else:
@@ -674,7 +698,7 @@ elif menu == "📋 Histórico & Feedbacks":
 # FLUXO 3: PAINEL ADMIN
 # ==============================================================
 elif menu == "🔒 Painel Admin (Supervisores)":
-    st.title("🔒 Painel Administrativo de Supervisores (AuditSP)")
+    st.title("🔒 Painel Administrativo de Supervisores")
     st.markdown("---")
     
     usuarios_disp = listar_usuarios_cadastrados()
@@ -707,12 +731,12 @@ elif menu == "🔒 Painel Admin (Supervisores)":
 
         if st.session_state.get(f"auth_{usuario_sel}", False):
             st.markdown("---")
-            st.subheader("💬 Registrar Feedback / Ação para Loja (AuditSP)")
+            st.subheader("💬 Registrar Feedback / Ação para Loja")
             
             wb = conectar_google_sheets()
             if wb:
                 try:
-                    sheet = wb.worksheet("Historico_AuditSP")
+                    sheet = wb.worksheet("Historico_CertificacaoSP")
                     registros = sheet.get_all_records()
                     if registros:
                         df_aud = pd.DataFrame(registros)
@@ -720,7 +744,7 @@ elif menu == "🔒 Painel Admin (Supervisores)":
                         
                         loja_comentar = st.selectbox("Selecione a Loja Auditada:", lojas_aud)
                         tipo_interacao = st.selectbox("Tipo de Registro:", ["Feedback da Visita", "Plano de Ação Corretiva", "Observação Geral"])
-                        comentario_texto = st.text_area("Descreva a orientação ou retorno para a promotora/gestão:")
+                        comentario_texto = st.text_area("Descreva a orientação ou retorno para a equipe:")
                         
                         if st.button("Salvar e Notificar por E-mail"):
                             if comentario_texto.strip():
@@ -732,9 +756,9 @@ elif menu == "🔒 Painel Admin (Supervisores)":
                             else:
                                 st.warning("Digite um comentário antes de enviar.")
                     else:
-                        st.info("Nenhuma auditoria SP cadastrada para receber feedbacks.")
+                        st.info("Nenhuma certificação cadastrada para receber feedbacks.")
                 except Exception as e:
                     st.error(f"Erro ao buscar histórico: {e}")
 
 # Assinatura de autoria na tela do programa (interface do Streamlit)
-st.markdown("<br><hr><p style='text-align: center; color: #555555; font-size: 11px;'>Desenvolvido por Benedito Bandola</p>", unsafe_allow_html=True)
+st.markdown("<br><hr><p style='text-align: center; color: #64748B; font-size: 11px;'>Desenvolvido por Benedito Bandola</p>", unsafe_allow_html=True)
