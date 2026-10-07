@@ -21,21 +21,15 @@ from oauth2client.service_account import ServiceAccountCredentials
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="Certificação Royal Canin São Paulo", page_icon="🐾", layout="centered", initial_sidebar_state="collapsed")
 
-# CSS Customizado: Força o tema claro puro com tons azulados limpos e legibilidade total
+# CSS Customizado: Força o modo claro e limpa a cor do menu suspenso (dropdown)
 st.markdown("""
     <style>
-        /* Fundo totalmente branco e texto escuro para o app inteiro */
+        /* Fundo principal da aplicação e textos */
         .stApp {
             background-color: #FFFFFF !important;
             color: #1E293B !important;
         }
-        [data-testid="stSidebar"] {
-            display: none;
-        }
-        [data-testid="stSidebarNav"] {
-            display: none;
-        }
-        [data-testid="collapsedControl"] {
+        [data-testid="stSidebar"], [data-testid="stSidebarNav"], [data-testid="collapsedControl"] {
             display: none;
         }
         /* Títulos principais em azul corporativo */
@@ -43,11 +37,30 @@ st.markdown("""
             color: #1E3A8A !important;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         }
-        /* Textos de labels e radios perfeitamente legíveis em preto/cinza escuro */
+        /* Rótulos e textos perfeitamente legíveis */
         .stRadio label, .stCheckbox label, .stSelectbox label, p, span, div {
             color: #1E293B !important;
         }
-        /* Caixas de destaque e cartões com fundo azul bem suave */
+        /* Caixa de seleção (Selectbox) - Força fundo branco e texto escuro */
+        div[data-baseweb="select"] > div {
+            background-color: #F8FAFC !important;
+            color: #1E293B !important;
+            border-color: #CBD5E1 !important;
+        }
+        /* Dropdown/Lista suspensa aberta - Fundo branco e texto visível */
+        div[data-baseweb="popover"] div[role="listbox"] {
+            background-color: #FFFFFF !important;
+            color: #1E293B !important;
+        }
+        div[data-baseweb="popover"] div[role="option"] {
+            background-color: #FFFFFF !important;
+            color: #1E293B !important;
+        }
+        div[data-baseweb="popover"] div[role="option"]:hover {
+            background-color: #E2E8F0 !important;
+            color: #0F172A !important;
+        }
+        /* Cartões de destaque */
         .custom-card {
             background-color: #F8FAFC;
             border-left: 5px solid #2563EB;
@@ -56,7 +69,7 @@ st.markdown("""
             margin-bottom: 15px;
             color: #1E293B;
         }
-        /* Botões principais em azul corporativo */
+        /* Botões em azul corporativo */
         .stButton>button {
             background-color: #1D4ED8 !important;
             color: #FFFFFF !important;
