@@ -19,7 +19,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="Certificação Royal Canin São Paulo", page_icon="🐾", layout="centered", initial_sidebar_state="collapsed")
 
-# CSS Customizado: Fundo branco, tema claro e tons azulados refinados
+# CSS Customizado: Fundo limpo com elementos de destaque (inputs e selects com fundo contrastante)
 st.markdown("""
     <style>
         .stApp {
@@ -36,11 +36,18 @@ st.markdown("""
         .stRadio label, .stCheckbox label, .stSelectbox label, p, span, div {
             color: #1E293B !important;
         }
+        /* Campos de Seleção (Selectbox) com fundo contrastante e borda nítida */
         div[data-baseweb="select"] > div {
-            background-color: #F8FAFC !important;
-            color: #1E293B !important;
-            border-color: #CBD5E1 !important;
+            background-color: #F1F5F9 !important;
+            color: #0F172A !important;
+            border: 1.5px solid #CBD5E1 !important;
             font-weight: bold !important;
+        }
+        /* Caixas de Texto (Text Area e Text Input) com fundo destacado */
+        textarea, input {
+            background-color: #F1F5F9 !important;
+            color: #0F172A !important;
+            border: 1.5px solid #CBD5E1 !important;
         }
         div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {
             background-color: #FFFFFF !important;
@@ -50,9 +57,17 @@ st.markdown("""
             color: #0F172A !important;
             font-weight: bold !important;
         }
+        div[data-baseweb="popover"] div[role="option"]:hover, ul[role="listbox"] li:hover {
+            background-color: #E2E8F0 !important;
+            color: #E2001A !important;
+            font-weight: bold !important;
+        }
         .custom-card {
             background-color: #F8FAFC;
             border-left: 5px solid #E2001A;
+            border-top: 1px solid #E2E8F0;
+            border-right: 1px solid #E2E8F0;
+            border-bottom: 1px solid #E2E8F0;
             padding: 14px;
             border-radius: 6px;
             margin-bottom: 15px;
@@ -278,8 +293,8 @@ def gerar_pdf_certificacao_sp(tipo_auditoria, promotora, loja, cidade, endereco,
     style_celula = ParagraphStyle('EstiloCelula', parent=estilos['Normal'], fontSize=8, leading=10, textColor=colors.HexColor('#1F2937'))
     style_celula_cab = ParagraphStyle('EstiloCelulaCab', parent=estilos['Normal'], fontSize=8, leading=10, textColor=colors.white, fontName="Helvetica-Bold")
     
-    cor_cabecalho_principal = colors.HexColor('#990000') # Vermelho Royal Canin
-    cor_cabecalho_secundario = colors.HexColor('#C53030') # Vermelho secundário
+    cor_cabecalho_principal = colors.HexColor('#990000')
+    cor_cabecalho_secundario = colors.HexColor('#C53030')
     
     fuso_sp = pytz.timezone('America/Sao_Paulo')
     agora = datetime.now(fuso_sp).strftime("%d/%m/%Y %H:%M")
@@ -294,9 +309,431 @@ def gerar_pdf_certificacao_sp(tipo_auditoria, promotora, loja, cidade, endereco,
         elem.append(Paragraph(f"<b>NOTA FINAL DA CERTIFICAÇÃO:</b> <font color='#990000'><b>{nota_total:.2f} / 6.0 pts</b></font>", estilos['Heading2']))
         elem.append(Spacer(1, 10))
 
-        # 1. PLANOGRAMAS E TIPO DE LOJA COM PONTOS GANHOS
         elem.append(Paragraph("<b>1. DADOS DA LOJA E PLANOGRAMAS</b>", estilos['Heading3']))
-        
         p_cao_val = 1.0 if dados_completos.get('plano_cao') == "Sim" else 0.0
         p_gato_val = 1.0 if dados_completos.get('plano_gato') == "Sim" else 0.0
-        p_
+        p_vet_val = 1.0 if dados_completos.get('plano_vet') == "Sim" else 0.0
+
+        data_exec = [
+            [Paragraph("<b>Indicador / Critério</b>", style_celula_cab), Paragraph("<b>Resultado</b>", style_celula_cab), Paragraph("<b>Pontos Ganhos</b>", style_celula_cab)],
+            [Paragraph("Tipo de Estabelecimento", style_celula), Paragraph(str(dados_completos.get('tipo_loja', '')), style_celula), Paragraph("-", style_celula)],
+            [Paragraph("Planograma de Cão", style_celula), Paragraph(str(dados_completos.get('plano_cao', '')), style_celula), Paragraph(f"<b>{p_cao_val:.2f} pt</b>", style_celula)],
+            [Paragraph("Planograma de Gato", style_celula), Paragraph(str(dados_completos.get('plano_gato', '')), style_celula), Paragraph(f"<b>{p_gato_val:.2f} pt</b>", style_celula)],
+            [Paragraph("Planograma Veterinary", style_celula), Paragraph(str(dados_completos.get('plano_vet', '')), style_celula), Paragraph(f"<b>{p_vet_val:.2f} pt</b>", style_celula)],
+        ]
+        t_exec = Table(data_exec, colWidths=[240, 150, 150])
+        t_exec.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), cor_cabecalho_principal),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('TOPPADDING', (0,0), (-1,-1), 5),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ]))
+        elem.append(t_exec)
+        elem.append(Spacer(1, 10))
+
+        elem.append(Paragraph("<b>2. SEPARAÇÃO E CONSERVAÇÃO</b>", estilos['Heading3']))
+        sep_val = 0.5 if dados_completos.get('sep_fhn') == "Sim" else 0.0
+        cat_val = 0.5 if dados_completos.get('cat_sp') == "Sim" else 0.0
+        cons_val = 0.25 if dados_completos.get('conservacao') == "Sim" else 0.0
+
+        data_sep = [
+            [Paragraph("<b>Critério de Execução</b>", style_celula_cab), Paragraph("<b>Status</b>", style_celula_cab), Paragraph("<b>Pontos Ganhos</b>", style_celula_cab)],
+            [Paragraph("Super Premium Cat separada da linha FHN?", style_celula), Paragraph(str(dados_completos.get('sep_fhn', '')), style_celula), Paragraph(f"<b>{sep_val:.2f} pt</b>", style_celula)],
+            [Paragraph("Super Premium Cat na categoria Super Premium?", style_celula), Paragraph(str(dados_completos.get('cat_sp', '')), style_celula), Paragraph(f"<b>{cat_val:.2f} pt</b>", style_celula)],
+            [Paragraph("Materiais bem executados e conservados?", style_celula), Paragraph(str(dados_completos.get('conservacao', '')), style_celula), Paragraph(f"<b>{cons_val:.2f} pt</b>", style_celula)],
+        ]
+        t_sep = Table(data_sep, colWidths=[240, 150, 150])
+        t_sep.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), cor_cabecalho_secundario),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('TOPPADDING', (0,0), (-1,-1), 5),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ]))
+        elem.append(t_sep)
+        elem.append(Spacer(1, 10))
+
+        elem.append(Paragraph("<b>3. MERCHANDISING E PONTOS EXTRAS</b>", estilos['Heading3']))
+        mat_ativos = dados_completos.get('materiais_ativos', [])
+        materiais_str = ", ".join(mat_ativos) if mat_ativos else "Nenhum material assinalado"
+        
+        tot_mat = len(mat_ativos)
+        p_merch = 0.75 if tot_mat >= 3 else (0.50 if tot_mat == 2 else (0.25 if tot_mat == 1 else 0.0))
+
+        qtd_ext = dados_completos.get('qtd_extras', 0)
+        p_ext = 1.0 if qtd_ext >= 3 else (0.50 if qtd_ext == 2 else (0.25 if qtd_ext == 1 else 0.0))
+
+        data_merch = [
+            [Paragraph("<b>Indicador</b>", style_celula_cab), Paragraph("<b>Detalhe / Quantidade</b>", style_celula_cab), Paragraph("<b>Pontos Ganhos</b>", style_celula_cab)],
+            [Paragraph("Materiais de Merchandising Presentes", style_celula), Paragraph(f"{tot_mat} material(is): {materiais_str}", style_celula), Paragraph(f"<b>{p_merch:.2f} pt</b>", style_celula)],
+            [Paragraph("Qtd de Pontos Extras Encontrados", style_celula), Paragraph(str(qtd_ext), style_celula), Paragraph(f"<b>{p_ext:.2f} pt</b>", style_celula)],
+        ]
+        t_merch = Table(data_merch, colWidths=[180, 210, 150])
+        t_merch.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), cor_cabecalho_principal),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('TOPPADDING', (0,0), (-1,-1), 5),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ]))
+        elem.append(t_merch)
+        elem.append(Spacer(1, 10))
+
+        if dados_completos.get('observacoes'):
+            elem.append(Paragraph("<b>4. OBSERVAÇÕES</b>", estilos['Heading3']))
+            t_obs = Table([[Paragraph(dados_completos['observacoes'], style_celula)]], colWidths=[540])
+            t_obs.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,0), colors.HexColor('#F8FAFC')), ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#94A3B8')), ('VALIGN', (0,0), (-1,-1), 'TOP')]))
+            elem.append(t_obs)
+            elem.append(Spacer(1, 10))
+
+        return elem
+
+    def adicionar_rodape(canvas, doc):
+        canvas.saveState()
+        canvas.setFont('Helvetica', 7)
+        canvas.setFillColor(colors.HexColor('#64748B'))
+        explicação = "Critérios de Pontuação (Total Máximo: 6.0 pts): Planogramas Cão/Gato/Vet = 1.0 pt cada | Super Premium Separada/Categoria = 0.5 pt cada | Conservação = 0.25 pt | Merchandising (>=3=0.75, 2=0.50, 1=0.25) | Pontos Extras (3=1.0, 2=0.50, 1=0.25)."
+        canvas.drawString(25, 22, explicação)
+        canvas.drawRightString(A4[0] - 25, 12, "Desenvolvido por Benedito Bandola")
+        canvas.restoreState()
+
+    elementos_pdf = construir_pdf()
+    doc_completo = SimpleDocTemplate(arq_completo, pagesize=A4, rightMargin=25, leftMargin=25, topMargin=25, bottomMargin=35)
+    doc_completo.build(elementos_pdf, onFirstPage=adicionar_rodape, onLaterPages=adicionar_rodape)
+
+    return arq_completo
+
+def enviar_email_auditoria(assunto, pdf_paths, destinatarios, corpo_email=""):
+    remetente = "beneditobandola@gmail.com"
+    senha = "kfih ccqx cskn oito"
+
+    msg = MIMEMultipart()
+    msg['From'] = remetente
+    msg['To'] = ", ".join(destinatarios)
+    msg['Subject'] = assunto
+
+    if not corpo_email:
+        corpo_email = "Olá,\n\nSegue em anexo o relatório de certificação da Royal Canin São Paulo.\n\nAtenciosamente,\nSistema de Certificação SP."
+
+    msg.attach(MIMEText(corpo_email, 'plain', 'utf-8'))
+
+    try:
+        for pdf_path in pdf_paths:
+            with open(pdf_path, "rb") as f:
+                part = MIMEApplication(f.read(), Name=os.path.basename(pdf_path))
+                part.add_header('Content-Disposition', 'attachment', filename=os.path.basename(pdf_path))
+                msg.attach(part)
+        
+        s = smtplib.SMTP('smtp.gmail.com', 587)
+        s.starttls()
+        s.login(remetente, senha)
+        s.sendmail(remetente, destinatarios, msg.as_string())
+        s.quit()
+        return True
+    except Exception as e:
+        print(f"Erro ao enviar e-mail: {e}")
+        return False
+
+# ==============================================================
+# FLUXO 1: ÁREA DA PROMOTORA
+# ==============================================================
+if menu == "📝 Área da Promotora":
+    st.title("🐾 Certificação Royal Canin São Paulo")
+    st.markdown("---")
+    
+    if df_clientes.empty:
+        st.warning("A planilha de clientes não foi encontrada ou está vazia.")
+    else:
+        def normalize(text):
+            if pd.isna(text): return ""
+            nfkd = unicodedata.normalize('NFKD', str(text))
+            return "".join([c for c in nfkd if not unicodedata.combining(c)]).upper().strip()
+
+        df_clientes['CIDADE_NORM'] = df_clientes['CIDADE'].apply(normalize)
+
+        st.subheader("1. Identificação e Tipo de Registro")
+        
+        col_tipo, col_prom = st.columns(2)
+        with col_tipo:
+            tipo_auditoria = st.radio("Selecione o Tipo de Registro:", ["Pré-Auditoria", "Auditoria"], horizontal=True)
+        with col_prom:
+            promotora = st.selectbox("Selecione o CDRC / Responsável:", ["Selecione...", "CDRC RIO PRETO", "CDRC SÃO JOÃO DA BOA VISTA"])
+
+        if promotora != "Selecione...":
+            cidades_map = {
+                "CDRC RIO PRETO": [
+                    "SAO JOSE DO RIO PRETO", "MIRASSOL", "OLIMPIA", "IBIRA", "POTIRENDABA", 
+                    "JOSE BONIFACIO", "NEVES PAULISTA", "TABAPUA", "POLONI", "CEDRAL", 
+                    "TANABI", "JACI", "BADY BASSITT", "IPIGUA", "NOVA GRANADA", "GUAPIACU", 
+                    "MONTE APRAZIVEL", "URUPES", "MENDONCA", "BALSAMO", "UCHOA", "CATIGUA", 
+                    "MIRASSOLANDIA"
+                ],
+                "CDRC SÃO JOÃO DA BOA VISTA": [
+                    "RIBEIRAO PRETO", "BATATAIS", "SERRANA", "JARDINOPOLIS", "SERTAOZINHO", 
+                    "CRAVINHOS", "PONTAL", "SAO SIMAO", "PITANGUEIRAS", "BRODOWSKI", 
+                    "LUIS ANTONIO", "DUMONT", "SALES OLIVEIRA", "BARRINHA", "SERRA AZUL", 
+                    "SAO CARLOS", "MATAO", "ARARAQUARA", "IBATE", "BOA ESPERANCA DO SUL", 
+                    "AMERICO BRASILIENSE", "RINCAO", "DOURADO", "NOVA EUROPA", "RIBEIRAO BONITO", 
+                    "SANTA LUCIA", "TABATINGA", "SAO JOSE DO RIO PARDO", "VARGEM GRANDE DO SUL", 
+                    "MOCOCA", "DIVINOLANDIA", "CASA BRANCA", "SAO SEBASTIAO DA GRAMA", 
+                    "SAO JOAO DA BOA VISTA", "TAPIRATIBA", "ITOBI", "AGUAS PRATA", "ALTINOPOLIS"
+                ]
+            }
+
+            cidades_alvo = cidades_map.get(promotora, [])
+            df_filtrado = df_clientes[df_clientes['CIDADE_NORM'].isin(cidades_alvo)]
+            lojas_lista = sorted(df_filtrado['NOME'].dropna().unique().tolist())
+
+            st.subheader("2. Seleção da Loja")
+            if len(lojas_lista) > 0:
+                loja_selecionada = st.selectbox("Selecione o Cliente / Loja:", lojas_lista)
+                
+                dados_loja = df_filtrado[df_filtrado['NOME'] == loja_selecionada].iloc[0]
+                cidade_loja = dados_loja.get('CIDADE', '')
+                endereco_loja = str(dados_loja.get('ENDEREÇO', 'Endereço não informado'))
+                
+                doc_bruto = str(dados_loja.get('DOCUMENTO', '')).strip()
+                if doc_bruto.endswith('.0'):
+                    doc_bruto = doc_bruto[:-2]
+                
+                nums_doc = "".join([c for c in doc_bruto if c.isdigit()])
+                
+                if len(nums_doc) == 14:
+                    cnpj_formatado = f"{nums_doc[:2]}.{nums_doc[2:5]}.{nums_doc[5:8]}/{nums_doc[8:12]}-{nums_doc[12:]}"
+                elif len(nums_doc) > 0 and len(nums_doc) < 14:
+                    nums_doc = nums_doc.zfill(14)
+                    cnpj_formatado = f"{nums_doc[:2]}.{nums_doc[2:5]}.{nums_doc[5:8]}/{nums_doc[8:12]}-{nums_doc[12:]}"
+                else:
+                    cnpj_formatado = "Não informado"
+                
+                st.markdown(f"""
+                <div class="custom-card">
+                    <div style="font-size: 15px; margin-bottom: 4px;">
+                        🏢 <b>CNPJ:</b> <span style="color: #E2001A; font-weight: 900; font-size: 17px; font-family: monospace;">{cnpj_formatado}</span>
+                    </div>
+                    <div style="font-size: 13.5px; color: #475569;">
+                        📍 <b>Cidade:</b> {cidade_loja} | <b>Endereço:</b> {endereco_loja}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                st.markdown("---")
+                st.subheader("3. Tipos de Lojas")
+                tipo_loja = st.radio(
+                    "Selecione o Tipo de Estabelecimento:",
+                    ["Pet Shop", "Clínica Veterinária", "Pet Shop + Consultório", "Clínica + Pet Shop", "Agropecuária"],
+                    key="tipo_loja"
+                )
+
+                st.markdown("---")
+                st.subheader("4. Planogramas e Separação (RTM SP)")
+
+                plano_cao = st.radio("2. Planograma de Cão (Peso: 1.0 pt)", ["Sim", "Não"], key="plano_cao")
+                plano_gato = st.radio("3. Planograma de Gato (Peso: 1.0 pt)", ["Sim", "Não"], key="plano_gato")
+                plano_vet = st.radio("4. Planograma Veterinary (Peso: 1.0 pt)", ["Sim", "Não"], key="plano_vet")
+                
+                sep_fhn = st.radio("5. Super Premium Cat está separada da linha FHN? (Peso: 0,5 pt)", ["Sim", "Não"], key="sep_fhn")
+                cat_sp = st.radio("6. Super Premium Cat está na categoria Super Premium? (Peso: 0,5 pt)", ["Sim", "Não"], key="cat_sp")
+                conservacao = st.radio("7. Os materiais estão bem executados e em bom estado de conservação? (Peso: 0,25 pt)", ["Sim", "Não"], key="conservacao")
+
+                st.markdown("---")
+                st.subheader("8. Merchandising (Materiais POP)")
+                st.info("💡 Regra: >= 3 materiais = 0,75 pt | 2 materiais = 0,50 pt | 1 material = 0,25 pt")
+                materiais = [
+                    "Faixa de Gôndola", "Bobina Forração", "Display Carona", 
+                    "Cartazete precificador", "Base de Sacarias (can base)", 
+                    "Totem Silhueta", "Cubo", "Clip Strip", "Stopper", "Outros materiais"
+                ]
+                mat_presenca = {mat: st.checkbox(mat, key=f"mat_{mat}") for mat in materiais}
+
+                st.markdown("---")
+                st.subheader("9. Pontos Extras Presentes")
+                st.info("💡 Regra: 3 = 1,0 pt | 2 = 0,50 pt | 1 = 0,25 pt | 0 = 0 pt")
+                qtd_pontos_extras = st.number_input("Quantidade de Pontos Extras encontrados:", min_value=0, max_value=3, value=0)
+
+                st.markdown("---")
+                st.subheader("10. Observações e Comentários")
+                observacoes_promotora = st.text_area("Digite aqui qualquer observação relevante sobre o PDV:")
+
+                st.markdown("---")
+                st.subheader("11. Opções de Envio")
+                opcao_envio = st.radio(
+                    "Selecione quem deve receber o relatório completo (PDF):",
+                    ["Somente Benedito", "Toda a Equipe (Benedito, Poli, Caio, Daniel, Rubens)"]
+                )
+                
+                if st.button("Finalizar, Salvar e Enviar Certificação", type="primary"):
+                    
+                    if opcao_envio == "Somente Benedito":
+                        destinatarios = ["benedito.bandola@minassal.com.br"]
+                    else:
+                        destinatarios = [
+                            "benedito.bandola@minassal.com.br",
+                            "poli@minassal.com.br",
+                            "caio.poli@minassal.com.br",
+                            "daniel.santini@minassal.com.br",
+                            "rubens.porfirio@minassal.com.br"
+                        ]
+
+                    nota_total = 0.0
+
+                    if plano_cao == "Sim": nota_total += 1.0
+                    if plano_gato == "Sim": nota_total += 1.0
+                    if plano_vet == "Sim": nota_total += 1.0
+
+                    if sep_fhn == "Sim": nota_total += 0.5
+                    if cat_sp == "Sim": nota_total += 0.5
+
+                    if conservacao == "Sim": nota_total += 0.25
+
+                    materiais_ativos_lista = [m for m in materiais if mat_presenca[m]]
+                    total_materiais = len(materiais_ativos_lista)
+                    p_merch = 0.0
+                    if total_materiais >= 3: p_merch = 0.75
+                    elif total_materiais == 2: p_merch = 0.50
+                    elif total_materiais == 1: p_merch = 0.25
+                    nota_total += p_merch
+
+                    p_extras = 0.0
+                    if qtd_pontos_extras >= 3: p_extras = 1.0
+                    elif qtd_pontos_extras == 2: p_extras = 0.50
+                    elif qtd_pontos_extras == 1: p_extras = 0.25
+                    nota_total += p_extras
+
+                    dados_completos = {
+                        'tipo_loja': tipo_loja,
+                        'plano_cao': plano_cao, 'plano_gato': plano_gato, 'plano_vet': plano_vet,
+                        'sep_fhn': sep_fhn, 'cat_sp': cat_sp, 'conservacao': conservacao,
+                        'materiais_ativos': materiais_ativos_lista, 'qtd_extras': qtd_pontos_extras,
+                        'observacoes': observacoes_promotora.strip()
+                    }
+
+                    fuso_sp = pytz.timezone('America/Sao_Paulo')
+                    data_atual = datetime.now(fuso_sp).strftime("%d/%m/%Y %H:%M:%S")
+                    
+                    corpo_email = f"Olá,\n\nSegue o relatório de certificação referente à {tipo_auditoria.upper()} - Certificação Royal Canin SP da loja {loja_selecionada} ({cidade_loja}).\n\n"
+                    corpo_email += f"📊 NOTA FINAL ATUAL: {nota_total:.2f} / 6.0 pts\n\n"
+                    corpo_email += f"• CDRC Responsável: {promotora}\n"
+                    corpo_email += f"• Tipo de Loja: {tipo_loja}\n"
+                    corpo_email += f"• Planograma Cão: {plano_cao} | Gato: {plano_gato} | Vet: {plano_vet}\n"
+                    corpo_email += f"• Super Premium Separada: {sep_fhn} | Categoria SP: {cat_sp}\n"
+                    corpo_email += f"• Conservação: {conservacao} | Materiais POP: {total_materiais} | Pontos Extras: {qtd_pontos_extras}\n\n"
+                    corpo_email += f"Observações: {observacoes_promotora.strip() if observacoes_promotora.strip() else 'Nenhuma.'}\n\n"
+                    corpo_email += "Atenciosamente,\nSistema de Certificação Royal Canin SP."
+
+                    with st.spinner("Gerando PDF e enviando e-mail..."):
+                        pdf_path = gerar_pdf_certificacao_sp(
+                            tipo_auditoria, promotora, loja_selecionada, cidade_loja, endereco_loja,
+                            dados_completos, nota_total
+                        )
+
+                        dados_planilha = [
+                            data_atual, promotora, cidade_loja, loja_selecionada, f"{nota_total:.2f}",
+                            tipo_loja, plano_cao, plano_gato, plano_vet, sep_fhn, cat_sp, conservacao,
+                            json.dumps(materiais_ativos_lista), qtd_pontos_extras,
+                            observacoes_promotora.strip()
+                        ]
+
+                        salvar_no_google_sheets(dados_planilha)
+                        
+                        assunto = f"📋 Certificação SP [{tipo_auditoria}]: {loja_selecionada} ({cidade_loja}) - Nota {nota_total:.2f}"
+                        enviado = enviar_email_auditoria(assunto, [pdf_path], destinatarios, corpo_email)
+
+                        if enviado:
+                            st.success(f"✅ Certificação finalizada com sucesso! Relatório enviado para os e-mails da gestão.")
+                            with open(pdf_path, "rb") as f:
+                                st.download_button("📥 Baixar PDF Gerado", data=f, file_name=os.path.basename(pdf_path), mime="application/pdf")
+                        else:
+                            st.warning("⚠️ Dados salvos na planilha, mas houve falha no envio do e-mail.")
+
+# ==============================================================
+# FLUXO 2: HISTÓRICO & FEEDBACKS
+# ==============================================================
+elif menu == "📋 Histórico & Feedbacks":
+    st.title("📋 Histórico de Certificações & Feedbacks")
+    st.markdown("---")
+    
+    wb = conectar_google_sheets()
+    if wb:
+        try:
+            sheet = wb.worksheet("Historico_CertificacaoSP")
+            dados = sheet.get_all_records()
+            if dados:
+                df_hist = pd.DataFrame(dados)
+                st.dataframe(df_hist.tail(20), use_container_width=True)
+            else:
+                st.info("Nenhuma certificação registrada até o momento.")
+        except Exception as e:
+            st.error(f"Erro ao ler histórico: {e}")
+    else:
+        st.error("Não foi possível conectar ao Google Sheets.")
+
+# ==============================================================
+# FLUXO 3: PAINEL ADMIN
+# ==============================================================
+elif menu == "🔒 Painel Admin (Supervisores)":
+    st.title("🔒 Painel Administrativo de Supervisores")
+    st.markdown("---")
+    
+    usuarios_disp = listar_usuarios_cadastrados()
+    usuario_sel = st.selectbox("Selecione seu Usuário:", ["Selecione..."] + usuarios_disp)
+    
+    if usuario_sel != "Selecione...":
+        senha_correta = buscar_senha_usuario(usuario_sel)
+        
+        if not senha_correta:
+            st.warning("Primeiro acesso deste usuário! Cadastre sua senha abaixo:")
+            nova_senha = st.text_input("Defina sua nova senha:", type="password")
+            confirma_senha = st.text_input("Confirme sua nova senha:", type="password")
+            if st.button("Salvar Nova Senha"):
+                if nova_senha and nova_senha == confirma_senha:
+                    if salvar_nova_senha(usuario_sel, nova_senha):
+                        st.success("Senha cadastrada com sucesso! Recarregue a página para fazer login.")
+                    else:
+                        st.error("Erro ao salvar a senha na planilha.")
+                else:
+                    st.error("As senhas digitadas não coincidem ou estão vazias.")
+        else:
+            senha_digitada = st.text_input("Digite sua senha:", type="password")
+            if st.button("Entrar"):
+                if senha_digitada == senha_correta:
+                    st.session_state[f"auth_{usuario_sel}"] = True
+                    registrar_log_acesso(usuario_sel)
+                    st.success(f"Bem-vindo(a), {usuario_sel}!")
+                else:
+                    st.error("Senha incorreta.")
+
+        if st.session_state.get(f"auth_{usuario_sel}", False):
+            st.markdown("---")
+            st.subheader("💬 Registrar Feedback / Ação para Loja")
+            
+            wb = conectar_google_sheets()
+            if wb:
+                try:
+                    sheet = wb.worksheet("Historico_CertificacaoSP")
+                    registros = sheet.get_all_records()
+                    if registros:
+                        df_aud = pd.DataFrame(registros)
+                        lojas_aud = df_aud['Loja'].dropna().unique().tolist()
+                        
+                        loja_comentar = st.selectbox("Selecione a Loja Auditada:", lojas_aud)
+                        tipo_interacao = st.selectbox("Tipo de Registro:", ["Feedback da Visita", "Plano de Ação Corretiva", "Observação Geral"])
+                        comentario_texto = st.text_area("Descreva a orientação ou retorno para a equipe:")
+                        
+                        if st.button("Salvar e Notificar por E-mail"):
+                            if comentario_texto.strip():
+                                sucesso = salvar_comentario_planilha(loja_comentar, usuario_sel, comentario_texto, tipo_interacao)
+                                if sucesso:
+                                    st.success("✅ Feedback registrado e notificação por e-mail enviada com sucesso!")
+                                else:
+                                    st.error("Erro ao registrar feedback.")
+                            else:
+                                st.warning("Digite um comentário antes de enviar.")
+                    else:
+                        st.info("Nenhuma certificação cadastrada para receber feedbacks.")
+                except Exception as e:
+                    st.error(f"Erro ao buscar histórico: {e}")
+
+# Assinatura de autoria na tela do programa (interface do Streamlit)
+st.markdown("<br><hr><p style='text-align: center; color: #64748B; font-size: 11px;'>Desenvolvido por Benedito Bandola</p>", unsafe_allow_html=True)
