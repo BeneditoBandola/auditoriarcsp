@@ -19,7 +19,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="Certificação Royal Canin São Paulo", page_icon="🐾", layout="centered", initial_sidebar_state="collapsed")
 
-# CSS Customizado: Fundo limpo com elementos de destaque (inputs e selects com fundo contrastante)
+# CSS Customizado: Fundo limpo, elementos de destaque com excelente contraste
 st.markdown("""
     <style>
         .stApp {
@@ -393,13 +393,17 @@ def gerar_pdf_certificacao_sp(tipo_auditoria, promotora, loja, cidade, endereco,
         canvas.saveState()
         canvas.setFont('Helvetica', 7)
         canvas.setFillColor(colors.HexColor('#64748B'))
-        explicação = "Critérios de Pontuação (Total Máximo: 6.0 pts): Planogramas Cão/Gato/Vet = 1.0 pt cada | Super Premium Separada/Categoria = 0.5 pt cada | Conservação = 0.25 pt | Merchandising (>=3=0.75, 2=0.50, 1=0.25) | Pontos Extras (3=1.0, 2=0.50, 1=0.25)."
-        canvas.drawString(25, 22, explicação)
-        canvas.drawRightString(A4[0] - 25, 12, "Desenvolvido por Benedito Bandola")
+        # Explicação dividida em 2 linhas limpas
+        linha1 = "Critérios de Pontuação (Total Máximo: 6.0 pts): Planogramas Cão/Gato/Vet = 1.0 pt cada | Super Premium Separada/Categoria = 0.5 pt cada"
+        linha2 = "Conservação = 0.25 pt | Merchandising (>=3=0.75, 2=0.50, 1=0.25) | Pontos Extras (3=1.0, 2=0.50, 1=0.25)."
+        
+        canvas.drawString(25, 28, linha1)
+        canvas.drawString(25, 18, linha2)
+        canvas.drawRightString(A4[0] - 25, 10, "Desenvolvido por Benedito Bandola")
         canvas.restoreState()
 
     elementos_pdf = construir_pdf()
-    doc_completo = SimpleDocTemplate(arq_completo, pagesize=A4, rightMargin=25, leftMargin=25, topMargin=25, bottomMargin=35)
+    doc_completo = SimpleDocTemplate(arq_completo, pagesize=A4, rightMargin=25, leftMargin=25, topMargin=25, bottomMargin=45)
     doc_completo.build(elementos_pdf, onFirstPage=adicionar_rodape, onLaterPages=adicionar_rodape)
 
     return arq_completo
