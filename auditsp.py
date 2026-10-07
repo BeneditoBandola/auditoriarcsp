@@ -21,13 +21,13 @@ from oauth2client.service_account import ServiceAccountCredentials
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="Certificação Royal Canin São Paulo", page_icon="🐾", layout="centered", initial_sidebar_state="collapsed")
 
-# CSS Customizado: Fundo totalmente branco, tema claro e tons azulados refinados
+# CSS Customizado: Força o tema claro puro com tons azulados limpos e legibilidade total
 st.markdown("""
     <style>
-        /* Fundo principal e texto em tom claro/neutro */
+        /* Fundo totalmente branco e texto escuro para o app inteiro */
         .stApp {
-            background-color: #FFFFFF;
-            color: #1E293B;
+            background-color: #FFFFFF !important;
+            color: #1E293B !important;
         }
         [data-testid="stSidebar"] {
             display: none;
@@ -38,14 +38,18 @@ st.markdown("""
         [data-testid="collapsedControl"] {
             display: none;
         }
-        /* Estilização dos títulos e subtítulos com tons azulados */
+        /* Títulos principais em azul corporativo */
         h1, h2, h3 {
             color: #1E3A8A !important;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         }
+        /* Textos de labels e radios perfeitamente legíveis em preto/cinza escuro */
+        .stRadio label, .stCheckbox label, .stSelectbox label, p, span, div {
+            color: #1E293B !important;
+        }
         /* Caixas de destaque e cartões com fundo azul bem suave */
         .custom-card {
-            background-color: #F0F4F8;
+            background-color: #F8FAFC;
             border-left: 5px solid #2563EB;
             padding: 14px;
             border-radius: 6px;
@@ -54,15 +58,15 @@ st.markdown("""
         }
         /* Botões principais em azul corporativo */
         .stButton>button {
-            background-color: #1D4ED8;
-            color: #FFFFFF;
+            background-color: #1D4ED8 !important;
+            color: #FFFFFF !important;
             border-radius: 6px;
             border: none;
             font-weight: 600;
         }
         .stButton>button:hover {
-            background-color: #1E40AF;
-            color: #FFFFFF;
+            background-color: #1E40AF !important;
+            color: #FFFFFF !important;
         }
     </style>
 """, unsafe_allow_html=True)
