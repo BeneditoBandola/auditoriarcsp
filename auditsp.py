@@ -613,10 +613,11 @@ if menu == "📝 Área da Promotora":
 
                 def processar_envio(tipo_envio):
                     if tipo_envio == "teste":
-                        destinatarios = ["benedito.bandola@minassal.com.br"]
+                        destinatarios = ["benedito.bandola@minassal.com.br", "beneditobandola@gmail.com"]
                     else:
                         destinatarios = [
                             "benedito.bandola@minassal.com.br",
+                            "beneditobandola@gmail.com",
                             "poli@minassal.com.br",
                             "caio.poli@minassal.com.br",
                             "daniel.santini@minassal.com.br",
@@ -702,7 +703,7 @@ if menu == "📝 Área da Promotora":
                             st.warning("⚠️ Dados salvos na planilha, mas houve falha no envio do e-mail.")
 
                 with col_btn1:
-                    if st.button("📨 Enviar somente Benedito", type="primary", use_container_width=True):
+                    if st.button("📨 Enviar somente Benedito (Teste)", type="primary", use_container_width=True):
                         processar_envio("teste")
 
                 with col_btn2:
