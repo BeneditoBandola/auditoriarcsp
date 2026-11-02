@@ -487,13 +487,45 @@ if menu == "📝 Área da Promotora":
 
             cidades_alvo = cidades_map.get(promotora, [])
             df_filtrado = df_clientes[df_clientes['CIDADE_NORM'].isin(cidades_alvo)]
-            lojas_lista = sorted(df_filtrado['NOME'].dropna().unique().tolist())
 
             st.subheader("2. Seleção da Loja")
-            if len(lojas_lista) > 0:
-                loja_selecionada = st.selectbox("Selecione o Cliente / Loja:", lojas_lista)
+
+            if promotora == "CDRC SÃO JOÃO DA BOA VISTA":
+                # Lista exata das 10 lojas solicitadas (ordenadas por código/nome conforme definido)
+                lojas_especificas_codigos = [24457, 628, 8785, 24050, 8312, 13829, 14272, 10421, 10787, 24402]
                 
-                dados_loja = df_filtrado[df_filtrado['NOME'] == loja_selecionada].iloc[0]
+                # Filtrar apenas essas 10 lojas na base
+                df_10_lojas = df_clientes[df_clientes['CÓDIGO'].isin(lojas_especificas_codigos)].copy()
+                
+                # Garantir a ordenação exata desejada (São Carlos primeiro, depois as demais)
+                df_10_lojas['ordem'] = df_10_lojas['CÓDIGO'].map({c: i for i, c in enumerate(lojas_especificas_codigos)})
+                df_10_lojas = df_10_lojas.sort_values('ordem')
+                
+                nomes_10_lojas = df_10_lojas['NOME'].tolist()
+                
+                # Opção de troca/outras lojas
+                opcao_outra = "🔄 Selecionar outra loja / Outras cidades..."
+                lista_selecao_sj = nomes_10_lojas + [opcao_outra]
+                
+                escolha_loja_sj = st.selectbox("Selecione o Cliente / Loja:", lista_selecao_sj)
+                
+                if escolha_loja_sj == opcao_outra:
+                    st.info("💡 Modo de busca ampla ativado. Selecione abaixo entre todas as lojas do CDRC.")
+                    lojas_lista_geral = sorted(df_filtrado['NOME'].dropna().unique().tolist())
+                    loja_selecionada = st.selectbox("Selecione entre todas as lojas do CDRC:", lojas_lista_geral)
+                    dados_loja = df_filtrado[df_filtrado['NOME'] == loja_selecionada].iloc[0]
+                else:
+                    loja_selecionada = escolha_loja_sj
+                    dados_loja = df_10_lojas[df_10_lojas['NOME'] == loja_selecionada].iloc[0]
+            else:
+                lojas_lista = sorted(df_filtrado['NOME'].dropna().unique().tolist())
+                if len(lojas_lista) > 0:
+                    loja_selecionada = st.selectbox("Selecione o Cliente / Loja:", lojas_lista)
+                    dados_loja = df_filtrado[df_filtrado['NOME'] == loja_selecionada].iloc[0]
+                else:
+                    loja_selecionada = None
+
+            if 'loja_selecionada' in locals() and loja_selecionada:
                 cidade_loja = dados_loja.get('CIDADE', '')
                 endereco_loja = str(dados_loja.get('ENDEREÇO', 'Endereço não informado'))
                 
