@@ -471,7 +471,7 @@ if menu == "📝 Área da Promotora":
                     "JOSE BONIFACIO", "NEVES PAULISTA", "TABAPUA", "POLONI", "CEDRAL", 
                     "TANABI", "JACI", "BADY BASSITT", "IPIGUA", "NOVA GRANADA", "GUAPIACU", 
                     "MONTE APRAZIVEL", "URUPES", "MENDONCA", "BALSAMO", "UCHOA", "CATIGUA", 
-                    "MIRASSOLANDIA"
+                    "MIRASSOLANDIA", "ARIRANHA", "SANTA ADELIA"
                 ],
                 "CDRC SÃO JOÃO DA BOA VISTA": [
                     "RIBEIRAO PRETO", "BATATAIS", "SERRANA", "JARDINOPOLIS", "SERTAOZINHO", 
@@ -490,33 +490,48 @@ if menu == "📝 Área da Promotora":
 
             st.subheader("2. Seleção da Loja")
 
+            opcao_outra = "🔄 Selecionar outra loja / Outras cidades..."
+
             if promotora == "CDRC SÃO JOÃO DA BOA VISTA":
-                # Lista exata das 10 lojas solicitadas (ordenadas por código/nome conforme definido)
                 lojas_especificas_codigos = [24457, 628, 8785, 24050, 8312, 13829, 14272, 10421, 10787, 24402]
-                
-                # Filtrar apenas essas 10 lojas na base
                 df_10_lojas = df_clientes[df_clientes['CÓDIGO'].isin(lojas_especificas_codigos)].copy()
-                
-                # Garantir a ordenação exata desejada (São Carlos primeiro, depois as demais)
                 df_10_lojas['ordem'] = df_10_lojas['CÓDIGO'].map({c: i for i, c in enumerate(lojas_especificas_codigos)})
                 df_10_lojas = df_10_lojas.sort_values('ordem')
                 
-                nomes_10_lojas = df_10_lojas['NOME'].tolist()
+                nomes_lojas = df_10_lojas['NOME'].tolist()
+                lista_selecao = nomes_lojas + [opcao_outra]
                 
-                # Opção de troca/outras lojas
-                opcao_outra = "🔄 Selecionar outra loja / Outras cidades..."
-                lista_selecao_sj = nomes_10_lojas + [opcao_outra]
+                escolha_loja = st.selectbox("Selecione o Cliente / Loja:", lista_selecao)
                 
-                escolha_loja_sj = st.selectbox("Selecione o Cliente / Loja:", lista_selecao_sj)
-                
-                if escolha_loja_sj == opcao_outra:
+                if escolha_loja == opcao_outra:
                     st.info("💡 Modo de busca ampla ativado. Selecione abaixo entre todas as lojas do CDRC.")
                     lojas_lista_geral = sorted(df_filtrado['NOME'].dropna().unique().tolist())
                     loja_selecionada = st.selectbox("Selecione entre todas as lojas do CDRC:", lojas_lista_geral)
                     dados_loja = df_filtrado[df_filtrado['NOME'] == loja_selecionada].iloc[0]
                 else:
-                    loja_selecionada = escolha_loja_sj
+                    loja_selecionada = escolha_loja
                     dados_loja = df_10_lojas[df_10_lojas['NOME'] == loja_selecionada].iloc[0]
+
+            elif promotora == "CDRC RIO PRETO":
+                lojas_rp_codigos = [9612, 6860, 6859, 4878, 11242, 27832, 6263, 8760, 12871, 13224, 4964]
+                df_11_lojas_rp = df_clientes[df_clientes['CÓDIGO'].isin(lojas_rp_codigos)].copy()
+                df_11_lojas_rp['ordem'] = df_11_lojas_rp['CÓDIGO'].map({c: i for i, c in enumerate(lojas_rp_codigos)})
+                df_11_lojas_rp = df_11_lojas_rp.sort_values('ordem')
+                
+                nomes_lojas_rp = df_11_lojas_rp['NOME'].tolist()
+                lista_selecao = nomes_lojas_rp + [opcao_outra]
+                
+                escolha_loja = st.selectbox("Selecione o Cliente / Loja:", lista_selecao)
+                
+                if escolha_loja == opcao_outra:
+                    st.info("💡 Modo de busca ampla ativado. Selecione abaixo entre todas as lojas do CDRC.")
+                    lojas_lista_geral = sorted(df_filtrado['NOME'].dropna().unique().tolist())
+                    loja_selecionada = st.selectbox("Selecione entre todas as lojas do CDRC:", lojas_lista_geral)
+                    dados_loja = df_filtrado[df_filtrado['NOME'] == loja_selecionada].iloc[0]
+                else:
+                    loja_selecionada = escolha_loja
+                    dados_loja = df_11_lojas_rp[df_11_lojas_rp['NOME'] == loja_selecionada].iloc[0]
+
             else:
                 lojas_lista = sorted(df_filtrado['NOME'].dropna().unique().tolist())
                 if len(lojas_lista) > 0:
