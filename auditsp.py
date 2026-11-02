@@ -622,6 +622,13 @@ if menu == "📝 Área da Promotora":
                             "daniel.santini@minassal.com.br",
                             "paulo.ferreira@minassal.com.br"
                         ]
+                        # Regras por filial/CDRC selecionado
+                        if promotora == "CDRC SÃO JOÃO DA BOA VISTA":
+                            if "pamelaalmeida5@icloud.com" not in destinatarios:
+                                destinatarios.append("pamelaalmeida5@icloud.com")
+                        elif promotora == "CDRC RIO PRETO":
+                            if "sarmento@minassal.com.br" not in destinatarios:
+                                destinatarios.append("sarmento@minassal.com.br")
 
                     nota_total = 0.0
 
@@ -699,7 +706,7 @@ if menu == "📝 Área da Promotora":
                         processar_envio("teste")
 
                 with col_btn2:
-                    if st.button("👥 Enviar para todo o time", type="primary", use_container_width=True):
+                    if st.button("👥 Enviar para todo o time (Benedito, Poli, Caio, Daniel, Paulo Ferreira + Regional)", type="primary", use_container_width=True):
                         processar_envio("time")
 
 # ==============================================================
