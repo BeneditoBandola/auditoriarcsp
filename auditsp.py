@@ -608,10 +608,20 @@ if menu == "📝 Área da Promotora":
                 observacoes_promotora = st.text_area("Digite aqui qualquer observação relevante sobre o PDV:")
 
                 st.markdown("---")
-                
-                if st.button("Finalizar, Salvar e Enviar Certificação", type="primary"):
-                    
-                    destinatarios = ["benedito.bandola@minassal.com.br"]
+                st.write("📥 **Escolha como deseja enviar a certificação:**")
+                col_btn1, col_btn2 = st.columns(2)
+
+                def processar_envio(tipo_envio):
+                    if tipo_envio == "teste":
+                        destinatarios = ["benedito.bandola@minassal.com.br"]
+                    else:
+                        destinatarios = [
+                            "benedito.bandola@minassal.com.br",
+                            "poli@minassal.com.br",
+                            "caio.poli@minassal.com.br",
+                            "daniel.santini@minassal.com.br",
+                            "paulo.ferreira@minassal.com.br"
+                        ]
 
                     nota_total = 0.0
 
@@ -678,11 +688,19 @@ if menu == "📝 Área da Promotora":
                         enviado = enviar_email_auditoria(assunto, [pdf_path], destinatarios, corpo_email)
 
                         if enviado:
-                            st.success(f"✅ Certificação finalizada com sucesso! Relatório enviado para o seu e-mail.")
+                            st.success(f"✅ Certificação finalizada com sucesso! Relatório enviado.")
                             with open(pdf_path, "rb") as f:
                                 st.download_button("📥 Baixar PDF Gerado", data=f, file_name=os.path.basename(pdf_path), mime="application/pdf")
                         else:
                             st.warning("⚠️ Dados salvos na planilha, mas houve falha no envio do e-mail.")
+
+                with col_btn1:
+                    if st.button("📨 Enviar somente Benedito", type="primary", use_container_width=True):
+                        processar_envio("teste")
+
+                with col_btn2:
+                    if st.button("👥 Enviar para todo o time", type="primary", use_container_width=True):
+                        processar_envio("time")
 
 # ==============================================================
 # FLUXO 2: HISTÓRICO & FEEDBACKS
