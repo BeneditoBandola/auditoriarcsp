@@ -286,7 +286,7 @@ def salvar_no_google_sheets(dados_auditoria):
         return False
     return False
 
-def gerar_pdf_certificacao_sp(tipo_auditoria, promotora, loja, cidade, endereco, dados_completos, nota_total):
+def gerar_pdf_certificacao_sp(tipo_auditoria, promotora, loja, cidade, endereco, dados_completos, nota_total, data_hora_manual):
     loja_limpa = "".join([c for c in loja if c.isalnum() or c in (' ', '_', '-')]).strip().replace(' ', '_')
     arq_completo = f"CERTIFICACAO_SP_{tipo_auditoria.upper().replace('-', '_')}_{loja_limpa}.pdf"
 
@@ -297,16 +297,13 @@ def gerar_pdf_certificacao_sp(tipo_auditoria, promotora, loja, cidade, endereco,
     cor_cabecalho_principal = colors.HexColor('#990000')
     cor_cabecalho_secundario = colors.HexColor('#C53030')
     
-    fuso_sp = pytz.timezone('America/Sao_Paulo')
-    agora = datetime.now(fuso_sp).strftime("%d/%m/%Y %H:%M")
-
     def construir_pdf():
         elem = []
         elem.append(Paragraph(f"<b>RELATÓRIO DE CERTIFICAÇÃO - {tipo_auditoria.upper()} (SÃO PAULO)</b>", estilos['Title']))
         elem.append(Spacer(1, 5))
         elem.append(Paragraph(f"<b>LOJA:</b> {loja} | <b>CIDADE:</b> {cidade}", estilos['Normal']))
         elem.append(Paragraph(f"<b>ENDEREÇO:</b> {endereco}", estilos['Normal']))
-        elem.append(Paragraph(f"<b>CDRC RESPONSÁVEL:</b> {promotora} | <b>DATA/HORA:</b> {agora}", estilos['Normal']))
+        elem.append(Paragraph(f"<b>CDRC RESPONSÁVEL:</b> {promotora} | <b>DATA/HORA:</b> {data_hora_manual}", estilos['Normal']))
         elem.append(Paragraph(f"<b>NOTA FINAL DA CERTIFICAÇÃO:</b> <font color='#990000'><b>{nota_total:.2f} / 6.0 pts</b></font>", estilos['Heading2']))
         elem.append(Spacer(1, 10))
 
@@ -608,6 +605,16 @@ if menu == "📝 Área da Promotora":
                 observacoes_promotora = st.text_area("Digite aqui qualquer observação relevante sobre o PDV:")
 
                 st.markdown("---")
+                st.subheader("11. Horário do Registro")
+                
+                fuso_sp = pytz.timezone('America/Sao_Paulo')
+                data_hoje = datetime.now(fuso_sp).strftime("%d/%m/%Y")
+                hora_atual = datetime.now(fuso_sp).strftime("%H:%M")
+                
+                hora_digitada = st.text_input("Digite a hora que sairá no PDF (formato HH:MM):", value=hora_atual, max_chars=5)
+                data_hora_str = f"{data_hoje} {hora_digitada}"
+
+                st.markdown("---")
                 st.write("📥 **Escolha como deseja enviar a certificação:**")
                 col_btn1, col_btn2 = st.columns(2)
 
@@ -664,9 +671,6 @@ if menu == "📝 Área da Promotora":
                         'observacoes': observacoes_promotora.strip()
                     }
 
-                    fuso_sp = pytz.timezone('America/Sao_Paulo')
-                    data_atual = datetime.now(fuso_sp).strftime("%d/%m/%Y %H:%M:%S")
-                    
                     corpo_email = f"Olá,\n\nSegue o relatório de certificação referente à {tipo_auditoria.upper()} - Certificação Royal Canin SP da loja {loja_selecionada} ({cidade_loja}).\n\n"
                     corpo_email += f"📊 NOTA FINAL ATUAL: {nota_total:.2f} / 6.0 pts\n\n"
                     corpo_email += f"• CDRC Responsável: {promotora}\n"
@@ -680,11 +684,11 @@ if menu == "📝 Área da Promotora":
                     with st.spinner("Gerando PDF e enviando e-mail..."):
                         pdf_path = gerar_pdf_certificacao_sp(
                             tipo_auditoria, promotora, loja_selecionada, cidade_loja, endereco_loja,
-                            dados_completos, nota_total
+                            dados_completos, nota_total, data_hora_str
                         )
 
                         dados_planilha = [
-                            data_atual, promotora, cidade_loja, loja_selecionada, f"{nota_total:.2f}",
+                            data_hora_str, promotora, cidade_loja, loja_selecionada, f"{nota_total:.2f}",
                             tipo_loja, plano_cao, plano_gato, plano_vet, sep_fhn, cat_sp, conservacao,
                             json.dumps(materiais_ativos_lista), qtd_pontos_extras,
                             observacoes_promotora.strip()
